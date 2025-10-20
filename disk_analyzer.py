@@ -4,8 +4,23 @@ Disk Space Analyzer
 Analyzes disk usage and generates an HTML report with visualizations
 """
 
-import os
+# Check Python version before anything else
 import sys
+
+if sys.version_info < (3, 6):
+    sys.stderr.write("Error: This script requires Python 3.6 or higher.\n")
+    sys.stderr.write("You are running Python {}.{}.{}\n".format(
+        sys.version_info.major,
+        sys.version_info.minor,
+        sys.version_info.micro
+    ))
+    sys.stderr.write("\nPlease upgrade Python:\n")
+    sys.stderr.write("  Ubuntu/Debian: sudo apt update && sudo apt install python3.9\n")
+    sys.stderr.write("  CentOS/RHEL:   sudo yum install python39\n")
+    sys.stderr.write("  macOS:         brew install python@3.11\n")
+    sys.exit(1)
+
+import os
 from pathlib import Path
 from datetime import datetime
 import json

@@ -14,10 +14,10 @@ jobs:
       matrix:
         arch: [arm64, x86_64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: disk_analyzer_macos_${{ matrix.arch }}
           path: dist/disk_analyzer_macos_*
@@ -48,10 +48,10 @@ jobs:
     name: Build Linux Binary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -65,7 +65,7 @@ jobs:
             disk_analyzer.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: disk_analyzer_linux_x86_64
           path: dist/disk_analyzer_linux_x86_64
@@ -74,10 +74,10 @@ jobs:
     name: Build Windows Binary
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -91,7 +91,7 @@ jobs:
             disk_analyzer.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: disk_analyzer_windows
           path: dist/disk_analyzer_windows.exe
@@ -101,11 +101,14 @@ jobs:
     needs: [build-macos, build-linux, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
