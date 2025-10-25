@@ -1,0 +1,11 @@
+# Disk Space Analyzer - Python Requirements
+#
+# Runtime Dependencies: NONE
+# The disk_analyzer.py script uses only Python standard library.
+# No external packages are required to run the script.
+#
+# Build Dependencies (for creating standalone binaries):
+pyinstaller>=6.0.0
+
+# Development Dependencies (optional):
+# None required - the project is pure Python with no external dependencies

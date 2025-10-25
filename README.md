@@ -1,231 +1,165 @@
-# Disk Space Analyzer
+# SpaceTool - Disk Space Analyzer
 
-A fast, cross-platform tool to analyze disk usage and generate beautiful HTML reports with interactive charts.
+Fast and accurate disk space analyzer with interactive HTML reports and duplicate file detection.
 
 ## Features
 
-- 📊 **Visual Reports** - Beautiful HTML reports with interactive Chart.js visualizations
-- 🚀 **Fast** - Optimized O(n×d) algorithm for large directory trees
-- 💾 **Accurate** - Handles sparse files correctly (like Docker images)
-- 🔗 **Smart** - Skips symlinks to avoid circular references and double-counting
-- 📈 **Timeline** - Shows when storage was consumed based on modification dates
-- 🎯 **No Double-Counting** - Intelligently calculates actual space used
+- 📊 Interactive HTML reports with charts
+- 🔍 Duplicate file detection (MD5 hashing)
+- 💾 Accurate disk usage (handles sparse files)
+- 📈 Storage timeline visualization
+- 📁 File type statistics
+- 🚀 Multi-core processing
+- 📝 Detailed text logs (prevents browser crashes on large scans)
 
 ## Quick Start
 
-### Using Python
+### Option 1: Use Binary (No Python Required)
 
 ```bash
-python3 disk_analyzer.py /path/to/analyze -o report.html -d 5
+# Build binary
+./spacetool.sh build
+
+# Run directly (no installation)
+./dist/disk_analyzer_macos_arm64 ~/Documents
+
+# Or install to system
+./spacetool.sh install
+spacetool ~/Documents
 ```
 
-### Using Binary
+### Option 2: Run Python Script Directly
 
 ```bash
-# Build the binary
-./build.sh
-
-# Run it
-./dist/disk_analyzer_macos_arm64 /path/to/analyze -o report.html -d 5
+python3 disk_analyzer.py ~/Documents
 ```
 
 ## Usage
 
-```
-disk_analyzer.py [-h] [-o OUTPUT] [-d DEPTH] [--manual] [path]
+```bash
+# Basic scan
+spacetool ~/Documents
 
-Options:
-  path                  Path to analyze (default: current directory)
-  -o, --output OUTPUT   Output HTML file (default: disk_report.html)
-  -d, --depth DEPTH     Maximum directory depth to scan (default: 4)
-  --manual              Show comprehensive user manual
-  -h, --help            Show brief help message
+# Deep scan with custom output
+spacetool ~/ -d 8 -o full_scan.html
+
+# Fast scan (no duplicate detection)
+spacetool ~/Downloads --no-hash -d 3
+
+# Show help
+spacetool --help
+
+# Show full manual
+spacetool --manual
 ```
 
-### Getting Help
+## Output
+
+Every scan creates **two files**:
+
+1. **HTML Report** (`disk_report.html`)
+   - Interactive charts and visualizations
+   - Limited to top items for performance
+
+2. **Text Log** (`disk_report_detailed.txt`)
+   - Complete details of ALL findings
+   - All duplicate groups with file paths
+   - All folders and file types
+
+## Commands
 
 ```bash
-# Quick help
-disk_analyzer -h
-
-# Comprehensive manual (recommended for first-time users)
-disk_analyzer --manual
-
-# Read offline manual
-cat MANUAL.txt
-```
-
-### Examples
-
-```bash
-# Analyze home directory with depth 5
-python3 disk_analyzer.py ~/ -d 5
-
-# Analyze Desktop and save to custom location
-python3 disk_analyzer.py ~/Desktop -o ~/Desktop/report.html
-
-# Analyze current directory with default settings
-python3 disk_analyzer.py
-```
-
-## Building Binaries
-
-See [BUILD.md](BUILD.md) for detailed build instructions.
-
-### Quick Build
-
-```bash
-# Build for current platform
-./build.sh
-
-# Clean build artifacts
-./build.sh clean
-```
-
-The binary will be created in `dist/` directory and can be distributed as a standalone executable (no Python required).
-
-## How It Works
-
-1. **Scan** - Recursively scans directories up to specified depth
-2. **Calculate** - Uses `st_blocks` to get actual disk usage (handles sparse files)
-3. **Analyze** - Identifies leaf folders to avoid double-counting nested directories
-4. **Visualize** - Generates interactive HTML report with:
-   - Top 20 largest folders (bar chart)
-   - Storage growth timeline (line chart)
-   - Top 50 space consumers (detailed table)
-   - Summary statistics
-
-## Key Features Explained
-
-### Accurate Disk Usage
-
-The tool uses `st_blocks * 512` instead of file size to calculate actual disk space used. This correctly handles:
-- Sparse files (like Docker VM images)
-- Compressed files
-- Files with holes
-
-### No Double-Counting
-
-The algorithm identifies "leaf" folders (folders without sub-folders in the dataset) to calculate totals:
-- Scans all directories up to max depth
-- Builds parent-child relationships
-- Only counts folders that have no children in the dataset
-- Result: accurate total without counting the same data multiple times
-
-### Timeline Analysis
-
-Shows when storage was consumed by:
-- Grouping folders by modification month
-- Using only leaf folders to avoid double-counting
-- Creating an interactive timeline chart
-
-## Report Example
-
-The HTML report includes:
-
-```
-📊 Disk Space Analysis Report
-═══════════════════════════════
-
-Total Space Used: 83.40 GB
-Largest Folder: 43.58 GB
-Folders Scanned: 116,519
-Average Folder Size: 1.11 MB
-
-🏆 Top 20 Largest Folders (Interactive Bar Chart)
-📈 Storage Growth Timeline (Interactive Line Chart)
-📁 Top 50 Space Consumers (Detailed Table)
+./spacetool.sh build       # Build standalone binary
+./spacetool.sh install     # Install to ~/.local/bin
+./spacetool.sh uninstall   # Remove from system
+./spacetool.sh clean       # Clean build artifacts
+./spacetool.sh help        # Show help
 ```
 
 ## Requirements
 
-### For Python Script
-- Python 3.7+
-- **No external dependencies** - uses only Python standard library
+- **For Binary:** None (standalone executable)
+- **For Python Script:** Python 3.6+
+
+## Examples
 
 ```bash
-# No installation needed! Just run:
-python3 disk_analyzer.py ~/Documents
+# Analyze home directory
+spacetool ~/ -d 5
+
+# Find duplicates in Downloads
+spacetool ~/Downloads -o downloads.html
+
+# Quick scan without MD5 hashing
+spacetool ~/Desktop --no-hash -d 3
+
+# System audit (requires sudo)
+sudo spacetool / -d 5
 ```
 
-### For Building Binaries
-- Python 3.7+
-- PyInstaller 6.0+
+## Options
+
+```
+positional arguments:
+  path                 Path to analyze (default: current directory)
+
+options:
+  -h, --help           Show help message
+  -o, --output FILE    Output HTML file (default: disk_report.html)
+  -d, --depth N        Maximum directory depth (default: 4)
+  --no-hash            Skip MD5 verification (faster)
+  --manual             Show comprehensive manual
+```
+
+## Installation
+
+### Install Binary to System
 
 ```bash
-# Install build dependencies
-pip install -r requirements.txt
+./spacetool.sh build
+./spacetool.sh install
+```
 
-# Or let the build script handle it automatically
-./build.sh
+Add to PATH (if needed):
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Uninstall
+
+```bash
+./spacetool.sh uninstall
+```
+
+## Files
+
+```
+spacetool/
+├── disk_analyzer.py       # Source code
+├── spacetool.sh          # Build & install script
+├── dist/                 # Built binaries
+├── requirements.txt      # Python dependencies (for building)
+└── README.md            # This file
 ```
 
 ## Platform Support
 
-- ✅ macOS (ARM64 / Intel)
-- ✅ Linux (x86_64)
-- ✅ Windows (x86_64)
+- ✅ macOS (Apple Silicon & Intel)
+- ✅ Linux x86_64
+- ✅ Windows (with WSL or native Python)
 
-## Performance
+## Tips
 
-- Scans ~100,000 items/minute (typical SSD)
-- Report generation: seconds for 100k+ folders
-- Optimized for large directory trees (tested with 950k+ items)
+1. **Limit depth** for faster scans: `-d 3`
+2. **Skip MD5** for speed: `--no-hash`
+3. **Check text log** for complete duplicate list
+4. **Target specific folders** instead of scanning everything
 
-## Common Use Cases
+## Why Two Output Files?
 
-### Find Space Hogs
-```bash
-python3 disk_analyzer.py ~/ -d 8 -o ~/space_report.html
-```
-Open the report and look at the bar chart to see your largest folders.
-
-### Clean Up Projects
-```bash
-python3 disk_analyzer.py ~/Projects -d 5
-```
-Identify `node_modules`, `venv`, `.terraform`, and other cache directories.
-
-### Analyze Docker Usage
-```bash
-python3 disk_analyzer.py ~/Library/Containers/com.docker.docker -d 10
-```
-See actual disk space used by Docker (not virtual size).
-
-### Monitor Growth
-```bash
-# Run monthly and compare timeline charts
-python3 disk_analyzer.py ~/ -o report_$(date +%Y-%m).html
-```
-
-## Troubleshooting
-
-### "Permission denied" errors
-The tool skips directories it can't access. Run with sudo for complete scan:
-```bash
-sudo python3 disk_analyzer.py / -d 5
-```
-
-### Scan is slow
-Reduce depth or analyze specific subdirectories:
-```bash
-python3 disk_analyzer.py ~/Documents -d 3
-```
-
-### Docker shows huge size
-You're looking at the old report! The fixed version shows actual disk usage, not virtual size.
+With millions of files, HTML can grow to 300MB+ and crash browsers. The text log holds all the details while the HTML stays lightweight and usable.
 
 ## License
 
-MIT License - See LICENSE file for details
-
-## Contributing
-
-Issues and pull requests welcome!
-
-## Credits
-
-Built with:
-- Python standard library
-- Chart.js for visualizations
-- PyInstaller for standalone binaries
+MIT License - See source code for details.
